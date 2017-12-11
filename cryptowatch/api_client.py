@@ -67,15 +67,6 @@ class Client(object):
 
         return urlencode(payload, quote_via=quote_plus)
 
-    def query(self, method, data=None):
-
-        if data is None:
-            data = {}
-
-        urlpath = '/' + method
-
-        return self._query(urlpath, data)
-
     def get_assets(self, asset=None):
         """Returns all assets (if no symbol provided).
         If symbol is given returns a single asset.
