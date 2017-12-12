@@ -1,8 +1,10 @@
 import requests
 from urllib.parse import urlencode, quote_plus
+from .exceptions import CryptowatchAPIException, CryptowatchRequestException
 
 
 class Client(object):
+
     API_URL = 'https://api.cryptowat.ch'
     MARKET_ROUTES = ['price', 'summary', 'orderbook', 'trades', 'ohlc']
     PARAM_ROUTES = ['trades', 'ohlc']
@@ -67,25 +69,207 @@ class Client(object):
 
         return urlencode(payload, quote_via=quote_plus)
 
-    def get_assets(self, asset=None):
-        """Returns all assets (if no symbol provided).
-        If symbol is given returns a single asset.
-        Lists all markets which have this asset as a base or quote.
+    def _request(self, method, uri):
+        response = getattr(self.session, method)(uri)
+        return self._handle_response(response)
 
-        :returns: list - List of product dictionaries
+    def _create_uri(self, path, symbol):
+        uri = self.API_URL + '/' + path
+        if symbol:
+            uri += '/' + symbol
+        return uri
+
+    def _request_api(self, method, path, symbol):
+        uri = self._create_uri(path, symbol)
+        print(uri)
+        return self._request(method, uri)
+
+    def _get(self, path, symbol=None):
+        return self._request_api('get', path, symbol)
+
+    def _handle_response(self, response):
+        if not str(response.status_code).startswith('2'):
+            raise CryptowatchAPIException(response)
+        try:
+            return response.json()
+        except ValueError:
+            raise CryptowatchRequestException('Invalid Response: %s' % response.text)
+
+    def get_assets(self, asset=None):
+        """Returns all assets (crypto and fiat).
+
+        :returns: list - List of asset dictionaries
+
+        .. code-block:: python
+
+            {
+              "result": [
+                {
+                  "symbol": "aud",
+                  "name": "Australian Dollar",
+                  "fiat": true,
+                  "route": "https://api.cryptowat.ch/assets/aud"
+                },
+                {
+                  "symbol": "etc",
+                  "name": "Ethereum Classic",
+                  "fiat": false,
+                  "route": "https://api.cryptowat.ch/assets/etc"
+                },
+                ...
+              ]
+            }
+
+        If asset symbol is given:
+
+        .. code-block:: python
+
+            get_assets('btc')
+
+        Lists all markets which have this asset as a base or quote:
+
+        .. code-block:: python
+
+            {
+              "result": {
+                "symbol": "btc",
+                "name": "Bitcoin",
+                "fiat": false,
+                "markets": {
+                  "base": [
+                    {
+                      "exchange": "bitfinex",
+                      "pair": "btcusd",
+                      "active": true,
+                      "route": "https://api.cryptowat.ch/markets/bitfinex/btcusd"
+                    },
+                    {
+                      "exchange": "gdax",
+                      "pair": "btcusd",
+                      "route": "https://api.cryptowat.ch/markets/gdax/btcusd"
+                    },
+                    ...
+                  ],
+                  "quote": [
+                    {
+                      "exchange": "bitfinex",
+                      "pair": "ltcbtc",
+                      "active": true,
+                      "route": "https://api.cryptowat.ch/markets/bitfinex/ltcbtc"
+                    },
+                    {
+                      "exchange": "bitfinex",
+                      "pair": "ethbtc",
+                      "active": true,
+                      "route": "https://api.cryptowat.ch/markets/bitfinex/ethbtc"
+                    },
+                    ...
+                  ]
+                }
+              }
+            }
+
         """
+
         if asset:
             return self._get('assets', asset)
 
         return self._get('assets')
 
     def get_pairs(self, pair=None):
-        """A pair of assets. Each pair has a base and a quote.
-        For example, btceur has base btc and quote eur.
+        """Returns all pairs (in no particular order).
 
+        :returns: list - List of pairs dictionaries
 
-        :returns: list - List of product dictionaries
+        .. code-block:: python
+
+            {
+              "result": [
+                {
+                  "symbol": "xmrusd",
+                  "id": 82,
+                  "base": {
+                    "symbol": "xmr",
+                    "name": "Monero",
+                    "fiat": false,
+                    "route": "https://api.cryptowat.ch/assets/xmr"
+                  },
+                  "quote": {
+                    "symbol": "usd",
+                    "name": "United States dollar",
+                    "fiat": true,
+                    "route": "https://api.cryptowat.ch/assets/usd"
+                  },
+                  "route": "https://api.cryptowat.ch/pairs/xmrusd"
+                },
+                {
+                  "symbol": "ltcusd",
+                  "id": 189,
+                  "base": {
+                    "symbol": "ltc",
+                    "name": "Litecoin",
+                    "fiat": false,
+                    "route": "https://api.cryptowat.ch/assets/ltc"
+                  },
+                  "quote": {
+                    "symbol": "usd",
+                    "name": "United States dollar",
+                    "fiat": true,
+                    "route": "https://api.cryptowat.ch/assets/usd"
+                  },
+                  "route": "https://api.cryptowat.ch/pairs/ltcusd"
+                },
+                ...
+              ]
+            }
+
+        If pair is given:
+
+        .. code-block:: python
+
+            get_pairs('ethbtc')
+
+        Lists all markets for this pair:
+
+        .. code-block:: python
+
+            {
+              "result": {
+                "symbol": "ethbtc",
+                "id": 23,
+                "base": {
+                  "symbol": "eth",
+                  "name": "Ethereum",
+                  "isFiat": false,
+                  "route": "https://api.cryptowat.ch/assets/eth"
+                },
+                "quote": {
+                  "symbol": "btc",
+                  "name": "Bitcoin",
+                  "isFiat": false,
+                  "route": "https://api.cryptowat.ch/assets/btc"
+                },
+                "route": "https://api.cryptowat.ch/pairs/ethbtc",
+                "markets": [
+                  {
+                    "exchange": "bitfinex",
+                    "pair": "ethbtc",
+                    "active": true,
+                    "route": "https://api.cryptowat.ch/markets/bitfinex/ethbtc"
+                  },
+                  {
+                    "exchange": "gdax",
+                    "pair": "ethbtc",
+                    "active": true,
+                    "route": "https://api.cryptowat.ch/markets/gdax/ethbtc"
+                  },
+                  ...
+                ]
+              }
+            }
+
         """
+
         if pair:
             return self._get('pairs', pair)
 
