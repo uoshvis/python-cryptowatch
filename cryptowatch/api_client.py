@@ -366,6 +366,8 @@ class Client(object):
               }
             }
 
+        **Price**
+
         To get a market’s last price
         pass a data dictionary with specific values:
 
@@ -388,6 +390,8 @@ class Client(object):
                 "price": 780.63
               }
             }
+
+        **Summary**
 
         To get a market’s last price as well as
         other stats based on a 24-hour sliding window
@@ -421,6 +425,141 @@ class Client(object):
                 "volume": 5345.0415
               }
             }
+
+        **Trades**
+
+        To get most recent trades (incrementing chronologically).
+        'route': 'trades' accepts 'limit' and 'since' parameters.
+
+          .. code-block:: python
+
+            data = {
+                'exchange': 'gdax',
+                'pair': 'btcusd',
+                'route': 'trades'
+                'params': {'limit': 10, 'since': 1481663244 }
+            }
+
+            get_markets(data=data)
+
+        This returns:
+
+          .. code-block:: python
+
+              {
+                "result": [
+                  [
+                    0,
+                    1481676478,
+                    734.39,
+                    0.1249
+                  ],
+                  [
+                    0,
+                    1481676537,
+                    734.394,
+                    0.0744
+                  ],
+                  [
+                    0,
+                    1481676581,
+                    734.396,
+                    0.1
+                  ],
+                  [
+                    0,
+                    1481676602,
+                    733.45,
+                    0.061
+                  ],
+                  ...
+                ]
+              }
+
+        Trades are lists of numbers in this order:
+
+        .. code-block:: python
+
+          [ ID, Timestamp, Price, Amount ]
+
+        **Ordebook**
+
+        To get market's order book use 'orderbook' route:
+
+        .. code-block:: python
+
+          data = {
+                'exchange': 'gdax',
+                'pair': 'btcusd',
+                'route': 'orderbook'
+            }
+
+        Example return:
+
+        .. code-block:: python
+
+          {
+            "result": {
+              "asks": [
+                [
+                  733.73,
+                  2.251
+                ],
+                [
+                  733.731,
+                  7.829
+                ],
+                [
+                  733.899,
+                  1.417
+                ],
+                ...
+              ],
+              "bids": [
+                [
+                  733.62,
+                  0.273
+                ],
+                ...
+              ]
+            ]
+          }
+
+      Orders are lists of numbers in this order:
+
+        .. code-block:: python
+
+          [ Price, Amount ]
+
+      **OHLC**
+
+      To get a market's OHLC candlestick data.
+      Params supported:
+      'before': UNIX timestamp,
+      'after': UNIX timestamp,
+      'periods': Comma-separated integers  60,180,108000
+
+      .. code-block:: python
+
+        data = {
+            'exchange': 'gdax',
+            'pair': 'btcusd',
+            'route': 'ohlc'
+            'params': {
+              'before': 1481663244,
+              'after': 1481663244,
+              'periods': '60,120'
+              }
+        }
+
+        get_markets(data=data)
+
+      Return values are in list:
+
+        .. code-block:: python
+
+          [ CloseTime, OpenPrice, HighPrice, LowPrice, ClosePrice, Volume ]
+
 
         """
 
