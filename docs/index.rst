@@ -12,6 +12,7 @@ Contents
 
    overview
    general
+   cryptowatch
 
 
 Indices and tables

@@ -12,42 +12,12 @@ class Client(object):
     def __init__(self):
         self.uri = 'https://api.cryptowat.ch'
         self.session = self._init_session()
-        # self.response = None
 
     def _init_session(self):
         session = requests.Session()
         session.headers.update({'Accept': 'application/json',
                                 'User-Agent': 'cryptowatch/python'})
         return session
-
-    def _request(self, method, uri):
-        self.response = getattr(self.session, method)(uri)
-        return self._handle_response(self.response)
-
-    def _create_uri(self, path, symbol):
-        uri = self.API_URL + '/' + path
-        if symbol:
-            uri = uri + '/' + symbol
-        print(uri)
-        return uri
-
-    def _request_api(self, method, path, symbol):
-        uri = self._create_uri(path, symbol)
-
-        return self._request(method, uri)
-
-    def _get(self, path, symbol=None):
-        return self._request_api('get', path, symbol)
-
-    def _handle_response(self, response):
-        """Internal helper for handling API responses.
-        Raises the appropriate exceptions when necessary; otherwise, returns the
-        response.
-        """
-        if not str(response.status_code).startswith('2'):
-            response.raise_for_status()
-            # TODO raise exception   # try: return
-        return response.json()
 
     def _encode_params(self, **kwargs):
         data = kwargs.get('data', None)
@@ -279,19 +249,181 @@ class Client(object):
         """Returns a list of all supported exchanges.
 
 
-        :returns: list - List of product dictionaries
+        :returns: list - List of exchanges dictionaries
+
+        .. code-block:: python
+
+            {
+              "result": [
+                {
+                  "symbol": "bitfinex",
+                  "name": "Bitfinex",
+                  "active": true,
+                  "route": "https://api.cryptowat.ch/exchanges/bitfinex"
+                },
+                {
+                  "symbol": "gdax",
+                  "name": "GDAX",
+                  "active": true,
+                  "route": "https://api.cryptowat.ch/exchanges/gdax"
+                },
+                ...
+              ]
+            }
+
+        If exchange name is given:
+
+        .. code-block:: python
+
+            get_exchanges('kraken')
+
+        Lists a single exchange, with associated routes:
+
+        .. code-block:: python
+
+            {
+              "result": {
+                "id": "kraken",
+                "name": "Kraken",
+                "active": true,
+                "routes": {
+                  "markets": "https://api.cryptowat.ch/markets/kraken"
+                }
+              }
+            }
+
         """
         if exchange:
             return self._get('exchanges', exchange)
 
         return self._get('exchanges')
 
-    def get_markets(self, path, **kwargs):
-        """Returns a list of all supported exchanges.
+    def get_markets(self, path=None, **kwargs):
+        """Returns a list of all supported markets.
 
-        :returns: list - List of product dictionaries
+        :returns: list - List of markets dictionaries
+
+        .. code-block:: python
+
+            {
+              "result": [
+                {
+                  "exchange": "bitfinex",
+                  "pair": "btcusd",
+                  "active": true,
+                  "route": "https://api.cryptowat.ch/markets/bitfinex/btcusd"
+                },
+                {
+                  "exchange": "bitfinex",
+                  "pair": "ltcusd"
+                  "active": true,
+                  "route": "https://api.cryptowat.ch/markets/bitfinex/ltcusd"
+                },
+                {
+                  "exchange": "bitfinex",
+                  "pair": "ltcbtc"
+                  "active": true,
+                  "route": "https://api.cryptowat.ch/markets/bitfinex/ltcbtc"
+                },
+                ...
+              ]
+            }
+
+        To get the supported markets for only a specific exchange:
+
+        .. code-block:: python
+
+            get_markets('kraken')
+
+        To get a single market, with associated routes
+        pass a data dictionary with specific values:
+
+        .. code-block:: python
+
+            data = {
+                'exchange': 'gdax',
+                'pair': 'btcusd'
+            }
+
+            get_markets(data=data)
+
+        This returns a single market, with associated routes:
+
+        .. code-block:: python
+
+            {
+              "result": {
+                "exchange": "gdax",
+                "pair": "btcusd",
+                "active": true,
+                "routes": {
+                  "price": "https://api.cryptowat.ch/markets/gdax/btcusd/price",
+                  "summary": "https://api.cryptowat.ch/markets/gdax/btcusd/summary",
+                  "orderbook": "https://api.cryptowat.ch/markets/gdax/btcusd/orderbook",
+                  "trades": "https://api.cryptowat.ch/markets/gdax/btcusd/trades",
+                  "ohlc": "https://api.cryptowat.ch/markets/gdax/btcusd/ohlc"
+                }
+              }
+            }
+
+        To get a market’s last price
+        pass a data dictionary with specific values:
+
+        .. code-block:: python
+
+            data = {
+                'exchange': 'gdax',
+                'pair': 'btcusd',
+                'route': 'price'
+            }
+
+            get_markets(data=data)
+
+        This returns a last price:
+
+        .. code-block:: python
+
+            {
+              "result": {
+                "price": 780.63
+              }
+            }
+
+        To get a market’s last price as well as
+        other stats based on a 24-hour sliding window
+        pass a data dictionary with specific values:
+
+        .. code-block:: python
+
+            data = {
+                'exchange': 'gdax',
+                'pair': 'btcusd',
+                'route': 'summary'
+            }
+
+            get_markets(data=data)
+
+        This returns:
+
+        .. code-block:: python
+
+            {
+              "result": {
+                "price":{
+                  "last": 780.31,
+                  "high": 790.34,
+                  "low": 772.76,
+                  "change": {
+                    "percentage": 0.0014373838,
+                    "absolute": 1.12
+                  }
+                },
+                "volume": 5345.0415
+              }
+            }
+
         """
-        path = None
+
         data = kwargs.get('data', None)
         if data and isinstance(data, dict):
             if 'exchange' in data:
