@@ -70,3 +70,25 @@ def test_get_price(assets_keys):
     response = client.get_markets(data=data)
     assert isinstance(response, dict)
     assert set(assets_keys).issubset(response.keys())
+
+
+def test_get_agg_prices(assets_keys):
+    response = client.get_aggregates('prices')
+    assert isinstance(response, dict)
+    assert set(assets_keys).issubset(response.keys())
+
+
+def test_get_agg_summaries(assets_keys):
+    response = client.get_aggregates('summaries')
+    assert isinstance(response, dict)
+    assert set(assets_keys).issubset(response.keys())
+
+
+def test_get_agg_summaries_exception():
+    with pytest.raises(ValueError):
+        client.get_aggregates('test')
+
+
+def test_get_agg_summaries_exception_no_arg():
+    with pytest.raises(ValueError):
+        client.get_aggregates()
