@@ -12,8 +12,8 @@ Contents
 
    overview
    general
+   exceptions
    cryptowatch
-
 
 Indices and tables
 ==================

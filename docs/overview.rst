@@ -8,6 +8,3 @@ Initialise the client
 
     from cryptowatch.api_client import Client
     client = Client()
-
-Making API Calls
-----------------

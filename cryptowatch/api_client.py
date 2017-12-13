@@ -1,6 +1,6 @@
 import requests
 from urllib.parse import urlencode, quote_plus
-from .exceptions import CryptowatchAPIException, CryptowatchRequestException
+from .exceptions import CryptowatchAPIException, CryptowatchResponseException
 
 
 class Client(object):
@@ -64,7 +64,7 @@ class Client(object):
         try:
             return response.json()
         except ValueError:
-            raise CryptowatchRequestException('Invalid Response: %s' % response.text)
+            raise CryptowatchResponseException('Invalid Response: %s' % response.text)
 
     def get_assets(self, asset=None):
         """An asset can be a crypto or fiat currency.

@@ -1,5 +1,5 @@
 from cryptowatch.api_client import Client
-from cryptowatch.exceptions import CryptowatchAPIException, CryptowatchRequestException
+from cryptowatch.exceptions import CryptowatchAPIException, CryptowatchResponseException
 
 import pytest
 import requests_mock
@@ -36,7 +36,7 @@ def test_api_exception(assets_keys, symbol='invalid'):
 def test_invalid_json(assets_keys, symbol='btc'):
     """Test Invalid response Exception"""
 
-    with pytest.raises(CryptowatchRequestException):
+    with pytest.raises(CryptowatchResponseException):
         with requests_mock.mock() as m:
             m.get('https://api.cryptowat.ch/assets/btc', text='<head></html>')
             client.get_assets(symbol)
