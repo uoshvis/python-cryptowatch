@@ -6,8 +6,9 @@ from .exceptions import CryptowatchAPIException, CryptowatchRequestException
 class Client(object):
 
     API_URL = 'https://api.cryptowat.ch'
-    MARKET_ROUTES = ['price', 'summary', 'orderbook', 'trades', 'ohlc']
-    PARAM_ROUTES = ['trades', 'ohlc']
+    ROUTES_MARKET = ['price', 'summary', 'orderbook', 'trades', 'ohlc']
+    ROUTES_PARAMS = ['trades', 'ohlc']
+    ROUTES_AGGREGATE = ['prices', 'summaries']
 
     def __init__(self):
         self.uri = 'https://api.cryptowat.ch'
@@ -66,9 +67,15 @@ class Client(object):
             raise CryptowatchRequestException('Invalid Response: %s' % response.text)
 
     def get_assets(self, asset=None):
-        """Returns all assets (crypto and fiat).
+        """An asset can be a crypto or fiat currency.
 
-        :returns: list - List of asset dictionaries
+        **Index**
+
+        .. code-block:: python
+
+            get_assets()
+
+        :returns: API response
 
         .. code-block:: python
 
@@ -90,13 +97,16 @@ class Client(object):
               ]
             }
 
-        If asset symbol is given:
+        **Asset**
+
+        Returns a single asset.
+        Lists all markets which have this asset as a base or quote.
 
         .. code-block:: python
 
             get_assets('btc')
 
-        Lists all markets which have this asset as a base or quote:
+        :returns: API response
 
         .. code-block:: python
 
@@ -147,9 +157,18 @@ class Client(object):
         return self._get('assets')
 
     def get_pairs(self, pair=None):
-        """Returns all pairs (in no particular order).
+        """A pair of assets. Each pair has a base and a quote.
+        For example, btceur has base btc and quote eur.
 
-        :returns: list - List of pairs dictionaries
+        **Index**
+
+        All pairs (in no particular order).
+
+        .. code-block:: python
+
+          get_pairs()
+
+        :returns: API response
 
         .. code-block:: python
 
@@ -193,13 +212,15 @@ class Client(object):
               ]
             }
 
-        If pair is given:
+        **Pair**
+
+        Returns a single pair. Lists all markets for this pair.
 
         .. code-block:: python
 
             get_pairs('ethbtc')
 
-        Lists all markets for this pair:
+        :returns: API response
 
         .. code-block:: python
 
@@ -246,51 +267,60 @@ class Client(object):
         return self._get('pairs')
 
     def get_exchanges(self, exchange=None):
-        """Returns a list of all supported exchanges.
+        """Exchanges are where all the action happens!
 
+      **Index**
 
-        :returns: list - List of exchanges dictionaries
+      Returns a list of all supported exchanges.
 
-        .. code-block:: python
+      .. code-block:: python
 
+        get_exchanges()
+
+      :returns: API response
+
+      .. code-block:: python
+
+        {
+          "result": [
             {
-              "result": [
-                {
-                  "symbol": "bitfinex",
-                  "name": "Bitfinex",
-                  "active": true,
-                  "route": "https://api.cryptowat.ch/exchanges/bitfinex"
-                },
-                {
-                  "symbol": "gdax",
-                  "name": "GDAX",
-                  "active": true,
-                  "route": "https://api.cryptowat.ch/exchanges/gdax"
-                },
-                ...
-              ]
-            }
-
-        If exchange name is given:
-
-        .. code-block:: python
-
-            get_exchanges('kraken')
-
-        Lists a single exchange, with associated routes:
-
-        .. code-block:: python
-
+              "symbol": "bitfinex",
+              "name": "Bitfinex",
+              "active": true,
+              "route": "https://api.cryptowat.ch/exchanges/bitfinex"
+            },
             {
-              "result": {
-                "id": "kraken",
-                "name": "Kraken",
-                "active": true,
-                "routes": {
-                  "markets": "https://api.cryptowat.ch/markets/kraken"
-                }
+              "symbol": "gdax",
+              "name": "GDAX",
+              "active": true,
+              "route": "https://api.cryptowat.ch/exchanges/gdax"
+            },
+            ...
+          ]
+        }
+
+      **Exchange**
+
+      Returns a single exchange, with associated routes.
+
+      .. code-block:: python
+
+        get_exchanges('kraken')
+
+      :returns: API response
+
+      .. code-block:: python
+
+          {
+            "result": {
+              "id": "kraken",
+              "name": "Kraken",
+              "active": true,
+              "routes": {
+                "markets": "https://api.cryptowat.ch/markets/kraken"
               }
             }
+          }
 
         """
         if exchange:
@@ -299,231 +329,286 @@ class Client(object):
         return self._get('exchanges')
 
     def get_markets(self, path=None, **kwargs):
-        """Returns a list of all supported markets.
 
-        :returns: list - List of markets dictionaries
+        """
+      A market is a pair listed on an exchange.
+      For example, pair btceur on exchange kraken is a market.
 
-        .. code-block:: python
+      **Index**
 
+      Returns a list of all supported markets.
+
+      .. code-block:: python
+
+        get_markets()
+
+      :returns: API response
+
+      .. code-block:: python
+
+        {
+          "result": [
             {
-              "result": [
-                {
-                  "exchange": "bitfinex",
-                  "pair": "btcusd",
-                  "active": true,
-                  "route": "https://api.cryptowat.ch/markets/bitfinex/btcusd"
-                },
-                {
-                  "exchange": "bitfinex",
-                  "pair": "ltcusd"
-                  "active": true,
-                  "route": "https://api.cryptowat.ch/markets/bitfinex/ltcusd"
-                },
-                {
-                  "exchange": "bitfinex",
-                  "pair": "ltcbtc"
-                  "active": true,
-                  "route": "https://api.cryptowat.ch/markets/bitfinex/ltcbtc"
-                },
-                ...
-              ]
-            }
-
-        To get the supported markets for only a specific exchange:
-
-        .. code-block:: python
-
-            get_markets('kraken')
-
-        To get a single market, with associated routes
-        pass a data dictionary with specific values:
-
-        .. code-block:: python
-
-            data = {
-                'exchange': 'gdax',
-                'pair': 'btcusd'
-            }
-
-            get_markets(data=data)
-
-        This returns a single market, with associated routes:
-
-        .. code-block:: python
-
+              "exchange": "bitfinex",
+              "pair": "btcusd",
+              "active": true,
+              "route": "https://api.cryptowat.ch/markets/bitfinex/btcusd"
+            },
             {
-              "result": {
-                "exchange": "gdax",
-                "pair": "btcusd",
-                "active": true,
-                "routes": {
-                  "price": "https://api.cryptowat.ch/markets/gdax/btcusd/price",
-                  "summary": "https://api.cryptowat.ch/markets/gdax/btcusd/summary",
-                  "orderbook": "https://api.cryptowat.ch/markets/gdax/btcusd/orderbook",
-                  "trades": "https://api.cryptowat.ch/markets/gdax/btcusd/trades",
-                  "ohlc": "https://api.cryptowat.ch/markets/gdax/btcusd/ohlc"
-                }
-              }
-            }
-
-        **Price**
-
-        To get a market’s last price
-        pass a data dictionary with specific values:
-
-        .. code-block:: python
-
-            data = {
-                'exchange': 'gdax',
-                'pair': 'btcusd',
-                'route': 'price'
-            }
-
-            get_markets(data=data)
-
-        This returns a last price:
-
-        .. code-block:: python
-
+              "exchange": "bitfinex",
+              "pair": "ltcusd"
+              "active": true,
+              "route": "https://api.cryptowat.ch/markets/bitfinex/ltcusd"
+            },
             {
-              "result": {
-                "price": 780.63
-              }
+              "exchange": "bitfinex",
+              "pair": "ltcbtc"
+              "active": true,
+              "route": "https://api.cryptowat.ch/markets/bitfinex/ltcbtc"
+            },
+            ...
+          ]
+        }
+
+      To get the supported markets for only a specific exchange:
+
+      .. code-block:: python
+
+        get_markets('kraken')
+
+      **Market**
+
+      Returns a single market, with associated routes.
+
+      :param exchange: required
+      :type exchange: str
+      :param pair: required
+      :type pair: str
+
+      .. code-block:: python
+
+        data = {
+            'exchange': 'gdax',
+            'pair': 'btcusd'
+        }
+
+      .. code-block:: python
+
+        get_markets(data=data)
+
+      :returns: API response
+
+      .. code-block:: python
+
+        {
+          "result": {
+            "exchange": "gdax",
+            "pair": "btcusd",
+            "active": true,
+            "routes": {
+              "price": "https://api.cryptowat.ch/markets/gdax/btcusd/price",
+              "summary": "https://api.cryptowat.ch/markets/gdax/btcusd/summary",
+              "orderbook": "https://api.cryptowat.ch/markets/gdax/btcusd/orderbook",
+              "trades": "https://api.cryptowat.ch/markets/gdax/btcusd/trades",
+              "ohlc": "https://api.cryptowat.ch/markets/gdax/btcusd/ohlc"
             }
-
-        **Summary**
-
-        To get a market’s last price as well as
-        other stats based on a 24-hour sliding window
-        pass a data dictionary with specific values:
-
-        .. code-block:: python
-
-            data = {
-                'exchange': 'gdax',
-                'pair': 'btcusd',
-                'route': 'summary'
-            }
-
-            get_markets(data=data)
-
-        This returns:
-
-        .. code-block:: python
-
-            {
-              "result": {
-                "price":{
-                  "last": 780.31,
-                  "high": 790.34,
-                  "low": 772.76,
-                  "change": {
-                    "percentage": 0.0014373838,
-                    "absolute": 1.12
-                  }
-                },
-                "volume": 5345.0415
-              }
-            }
-
-        **Trades**
-
-        To get most recent trades (incrementing chronologically).
-        'route': 'trades' accepts 'limit' and 'since' parameters.
-
-          .. code-block:: python
-
-            data = {
-                'exchange': 'gdax',
-                'pair': 'btcusd',
-                'route': 'trades'
-                'params': {'limit': 10, 'since': 1481663244 }
-            }
-
-            get_markets(data=data)
-
-        This returns:
-
-          .. code-block:: python
-
-              {
-                "result": [
-                  [
-                    0,
-                    1481676478,
-                    734.39,
-                    0.1249
-                  ],
-                  [
-                    0,
-                    1481676537,
-                    734.394,
-                    0.0744
-                  ],
-                  [
-                    0,
-                    1481676581,
-                    734.396,
-                    0.1
-                  ],
-                  [
-                    0,
-                    1481676602,
-                    733.45,
-                    0.061
-                  ],
-                  ...
-                ]
-              }
-
-        Trades are lists of numbers in this order:
-
-        .. code-block:: python
-
-          [ ID, Timestamp, Price, Amount ]
-
-        **Ordebook**
-
-        To get market's order book use 'orderbook' route:
-
-        .. code-block:: python
-
-          data = {
-                'exchange': 'gdax',
-                'pair': 'btcusd',
-                'route': 'orderbook'
-            }
-
-        Example return:
-
-        .. code-block:: python
-
-          {
-            "result": {
-              "asks": [
-                [
-                  733.73,
-                  2.251
-                ],
-                [
-                  733.731,
-                  7.829
-                ],
-                [
-                  733.899,
-                  1.417
-                ],
-                ...
-              ],
-              "bids": [
-                [
-                  733.62,
-                  0.273
-                ],
-                ...
-              ]
-            ]
           }
+        }
+
+      **Price**
+
+      Returns a market’s last price.
+
+      :param exchange: required
+      :type exchange: str
+      :param pair: required
+      :type pair: str
+      :param route: 'price'
+      :type route: str
+
+      .. code-block:: python
+
+        data = {
+            'exchange': 'gdax',
+            'pair': 'btcusd',
+            'route': 'price'
+        }
+
+      .. code-block:: python
+
+        get_markets(data=data)
+
+      :returns: API response
+
+      .. code-block:: python
+
+        {
+          "result": {
+            "price": 780.63
+          }
+        }
+
+      **Summary**
+
+      Returns a market’s last price as well as other stats
+      based on a 24-hour sliding window.
+
+      :param exchange: required
+      :type exchange: str
+      :param pair: required
+      :type pair: str
+      :param route: 'summary'
+      :type route: str
+
+      .. code-block:: python
+
+        data = {
+            'exchange': 'gdax',
+            'pair': 'btcusd',
+            'route': 'summary'
+        }
+
+      .. code-block:: python
+
+        get_markets(data=data)
+
+      :returns: API response
+
+      .. code-block:: python
+
+        {
+          "result": {
+            "price":{
+              "last": 780.31,
+              "high": 790.34,
+              "low": 772.76,
+              "change": {
+                "percentage": 0.0014373838,
+                "absolute": 1.12
+              }
+            },
+            "volume": 5345.0415
+          }
+        }
+
+      **Trades**
+
+      Returns a market’s most recent trades, incrementing chronologically.
+
+      :param exchange: required
+      :type exchange: str
+      :param pair: required
+      :type pair: str
+      :param route: 'trades'
+      :type route: str
+      :param params: supported params
+      :type params: dict
+      :param params.limit: limit amount of trades returned
+      :type params.limit: int (defaults to 50)
+      :param params.since: only return trades at or after this time.
+      :type params.since: UNIX timestamp
+
+      .. code-block:: python
+
+        data = {
+            'exchange': 'gdax',
+            'pair': 'btcusd',
+            'route': 'trades',
+            'params': {'limit': 10, 'since': 1481663244 }
+        }
+      .. code-block:: python
+
+        get_markets(data=data)
+
+      :returns: API response
+
+      .. code-block:: python
+
+        {
+          "result": [
+            [
+              0,
+              1481676478,
+              734.39,
+              0.1249
+            ],
+            [
+              0,
+              1481676537,
+              734.394,
+              0.0744
+            ],
+            [
+              0,
+              1481676581,
+              734.396,
+              0.1
+            ],
+            [
+              0,
+              1481676602,
+              733.45,
+              0.061
+            ],
+            ...
+          ]
+        }
+
+      Trades are lists of numbers in this order:
+
+      .. code-block:: python
+
+        [ ID, Timestamp, Price, Amount ]
+
+      **Order Book**
+
+      To get market's order book use 'orderbook' route.
+
+      :param exchange: required
+      :type exchange: str
+      :param pair: required
+      :type pair: str
+      :param route: 'orderbook'
+      :type route: str
+
+      .. code-block:: python
+
+        data = {
+              'exchange': 'gdax',
+              'pair': 'btcusd',
+              'route': 'orderbook'
+          }
+
+      :returns: API response
+
+      .. code-block:: python
+
+        {
+          "result": {
+            "asks": [
+              [
+                733.73,
+                2.251
+              ],
+              [
+                733.731,
+                7.829
+              ],
+              [
+                733.899,
+                1.417
+              ],
+              ...
+            ],
+            "bids": [
+              [
+                733.62,
+                0.273
+              ],
+              ...
+            ]
+          ]
+        }
 
       Orders are lists of numbers in this order:
 
@@ -533,11 +618,23 @@ class Client(object):
 
       **OHLC**
 
-      To get a market's OHLC candlestick data.
-      Params supported:
-      'before': UNIX timestamp,
-      'after': UNIX timestamp,
-      'periods': Comma-separated integers  60,180,108000
+      Returns a market’s OHLC candlestick data.
+      Returns data as lists of lists of numbers for each time period integer.
+
+      :param exchange: required
+      :type exchange: str
+      :param pair: required
+      :type pair: str
+      :param route: 'ohlc'
+      :type route: str
+      :param params: supported params
+      :type params: dict
+      :param params.before: Only return candles opening before this time
+      :type params.before: int (defaults to 50)
+      :param params.after:  Only return candles opening after this time
+      :type params.after: UNIX timestamp
+      :param params.periods: return these time periods
+      :type params.periods: Comma-separated integers  60,180,108000
 
       .. code-block:: python
 
@@ -552,6 +649,8 @@ class Client(object):
               }
         }
 
+      .. code-block:: python
+
         get_markets(data=data)
 
       Return values are in list:
@@ -559,7 +658,6 @@ class Client(object):
         .. code-block:: python
 
           [ CloseTime, OpenPrice, HighPrice, LowPrice, ClosePrice, Volume ]
-
 
         """
 
@@ -569,9 +667,9 @@ class Client(object):
                 path = data['exchange']
                 if 'pair' in data:
                     path += '/' + data['pair']
-                    if 'route' in data and data['route'] in self.MARKET_ROUTES:
+                    if 'route' in data and data['route'] in self.ROUTES_MARKET:
                         path += '/' + data['route']
-                        if data['route'] in self.PARAM_ROUTES and 'params' in data:
+                        if data['route'] in self.ROUTES_PARAMS and 'params' in data:
                             path += '?' + self._encode_params(path=path, data=data)
         if path:
             return self._get('markets', path)
@@ -579,6 +677,71 @@ class Client(object):
         return self._get('markets')
 
     def get_aggregates(self, *args):
-        if not args:
+        """Retrieves the prices and summaries of all markets
+        on the site in a single request.
+
+        **Prices**
+
+        To get the current price for all supported markets use:
+
+        .. code-block:: python
+
+          get_aggregates('prices')
+
+        :returns: API response
+
+        .. code-block:: python
+
+          {
+            "result": {
+              {
+                "bitfinex:bfxbtc": 0.00067133,
+                "bitfinex:bfxusd": 0.52929,
+                "bitfinex:btcusd": 776.73,
+                ...
+              }
+            }
+          }
+
+        **Summaries**
+
+        To get the market summary for all supported markets use:
+
+        .. code-block:: python
+
+          get_aggregates('summaries')
+
+        :returns: API response
+
+        .. code-block:: python
+
+          {
+            "result": {
+              {
+                "bitfinex:bfxbtc": {
+                  "price": {
+                    "last": 0.00067133,
+                    "high": 0.0006886,
+                    "low": 0.00066753,
+                    "change": {
+                      "percentage": -0.02351996,
+                      "absolute": -1.6169972e-05
+                    }
+                  },
+                  "volume":84041.625
+                },
+                "bitfinex:bfxusd": {
+                  ...
+                },
+                "bitfinex:btcusd": {
+                  ...
+                },
+                ...
+              }
+            }
+          }
+
+        """
+        if not args or args[0] not in self.ROUTES_AGGREGATE:
             raise ValueError('Use either "prices", or "summaries"')
         return self._get('markets', args[0])
