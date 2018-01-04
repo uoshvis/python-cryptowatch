@@ -52,7 +52,6 @@ class Client(object):
 
     def _request_api(self, method, path, symbol):
         uri = self._create_uri(path, symbol)
-        print(uri)
         return self._request(method, uri)
 
     def _get(self, path, symbol=None):
