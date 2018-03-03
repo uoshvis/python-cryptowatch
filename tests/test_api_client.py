@@ -1,16 +1,12 @@
-from cryptowatch.api_client import Client
-from cryptowatch.exceptions import CryptowatchAPIException, CryptowatchResponseException
-
+"""Unit tests related to the api_client module."""
 import pytest
-import requests_mock
 
+import requests_mock
+from cryptowatch.api_client import Client
+from cryptowatch.exceptions import (CryptowatchAPIException,
+                                    CryptowatchResponseException)
 
 client = Client()
-
-
-@pytest.fixture
-def assets_keys(scope='module'):
-    return ['result', 'allowance']
 
 
 def test_get_assets(assets_keys, symbol=None):
@@ -27,13 +23,13 @@ def test_get_assets_symbol(assets_keys, symbol='btc'):
     assert set(assets_keys).issubset(response.keys())
 
 
-def test_api_exception(assets_keys, symbol='invalid'):
+def test_api_exception(symbol='invalid'):
     """Test API response Exception"""
     with pytest.raises(CryptowatchAPIException):
         client.get_assets(symbol)
 
 
-def test_invalid_json(assets_keys, symbol='btc'):
+def test_invalid_json(symbol='btc'):
     """Test Invalid response Exception"""
 
     with pytest.raises(CryptowatchResponseException):
@@ -72,23 +68,24 @@ def test_get_price(assets_keys):
     assert set(assets_keys).issubset(response.keys())
 
 
-def test_get_agg_prices(assets_keys):
-    response = client.get_aggregates('prices')
-    assert isinstance(response, dict)
-    assert set(assets_keys).issubset(response.keys())
-
-
-def test_get_agg_summaries(assets_keys):
-    response = client.get_aggregates('summaries')
+@pytest.mark.parametrize('route', [
+    'prices',
+    'summaries',
+])
+def test_routes(assets_keys, route):
+    """It returns a dict and contains expected keys"""
+    response = client.get_aggregates(route)
     assert isinstance(response, dict)
     assert set(assets_keys).issubset(response.keys())
 
 
 def test_get_agg_summaries_exception():
+    """It raises ValueError with an incorrect argument."""
     with pytest.raises(ValueError):
         client.get_aggregates('test')
 
 
 def test_get_agg_summaries_exception_no_arg():
+    """It raises ValueError when no argument is passed."""
     with pytest.raises(ValueError):
         client.get_aggregates()

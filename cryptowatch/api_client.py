@@ -1,3 +1,4 @@
+"""Module related to the client interface to cryptowat.ch API."""
 import requests
 from urllib.parse import urlencode, quote_plus
 from .exceptions import CryptowatchAPIException, CryptowatchResponseException
