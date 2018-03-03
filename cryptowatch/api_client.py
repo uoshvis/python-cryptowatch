@@ -1,8 +1,13 @@
 """Module contining the interface to the API client."""
 
+from urllib.parse import quote_plus, urlencode
+
 import requests
-from urllib.parse import urlencode, quote_plus
-from .exceptions import CryptowatchAPIException, CryptowatchResponseException
+
+from cryptowatch.exceptions import (
+    CryptowatchAPIException,
+    CryptowatchResponseException
+)
 
 
 class Client(object):
