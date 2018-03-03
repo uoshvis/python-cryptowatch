@@ -1,9 +1,12 @@
+"""Module contining the interface to the API client."""
+
 import requests
 from urllib.parse import urlencode, quote_plus
 from .exceptions import CryptowatchAPIException, CryptowatchResponseException
 
 
 class Client(object):
+    """The public client to the cryptowat.ch api."""
 
     API_URL = 'https://api.cryptowat.ch'
     ROUTES_MARKET = ['price', 'summary', 'orderbook', 'trades', 'ohlc']
