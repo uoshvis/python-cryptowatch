@@ -1,4 +1,9 @@
+"""Custom exceptions module."""
+
+
 class CryptowatchAPIException(Exception):
+    """Raised when the API response is not 2xx."""
+
     def __init__(self, response):
         self.status_code = response.status_code
         self.reason = response.reason
@@ -9,6 +14,8 @@ class CryptowatchAPIException(Exception):
 
 
 class CryptowatchResponseException(Exception):
+    """Raised for an invalid json response from the API"""
+
     def __init__(self, message):
         self.message = message
 
