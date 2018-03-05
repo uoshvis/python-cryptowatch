@@ -1,10 +1,15 @@
 """Module related to the client interface to cryptowat.ch API."""
+
+from urllib.parse import quote_plus, urlencode
 import requests
-from urllib.parse import urlencode, quote_plus
-from .exceptions import CryptowatchAPIException, CryptowatchResponseException
+from cryptowatch.exceptions import (
+    CryptowatchAPIException,
+    CryptowatchResponseException
+)
 
 
 class Client(object):
+    """The public client to the cryptowat.ch api."""
 
     API_URL = 'https://api.cryptowat.ch'
     ROUTES_MARKET = ['price', 'summary', 'orderbook', 'trades', 'ohlc']
@@ -15,13 +20,15 @@ class Client(object):
         self.uri = 'https://api.cryptowat.ch'
         self.session = self._init_session()
 
-    def _init_session(self):
+    @staticmethod
+    def _init_session():
         session = requests.Session()
         session.headers.update({'Accept': 'application/json',
                                 'User-Agent': 'cryptowatch/python'})
         return session
 
-    def _encode_params(self, **kwargs):
+    @staticmethod
+    def _encode_params(**kwargs):
         data = kwargs.get('data', None)
         payload = {}
         if data['route'] == 'trades':
@@ -58,7 +65,8 @@ class Client(object):
     def _get(self, path, symbol=None):
         return self._request_api('get', path, symbol)
 
-    def _handle_response(self, response):
+    @staticmethod
+    def _handle_response(response):
         if not str(response.status_code).startswith('2'):
             raise CryptowatchAPIException(response)
         try:
