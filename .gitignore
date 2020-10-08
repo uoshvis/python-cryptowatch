@@ -1,6 +1,5 @@
 # My ignores
 ENV*/
-main_for_testing* # used for testing
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
