@@ -26,5 +26,21 @@ Quick Start
     # get markets which have btc as base or quote
     assets_btc = client.get_assets('btc')
 
+    """
+    Returns a market's OHLC candlestick data.
+    This represents a 1-hour candle starting at 1594087200 and ending at 1602179348.
+    """
+
+    data = {
+        'exchange': 'gdax',
+        'pair': 'btcusd',
+        'route': 'ohlc',
+        'params': {
+            'before': 1602179348,
+            'after': 1594087200,
+            'periods': '3600'}
+    }
+
+    market = client.get_markets(data=data)
 
 For more `check out the documentation <https://python-cryptowatch.readthedocs.io/en/latest/>`_.
