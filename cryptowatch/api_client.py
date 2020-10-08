@@ -653,7 +653,7 @@ class Client(object):
             'params': {
               'before': 1481663244,
               'after': 1481663244,
-              'periods': '60,120'
+              'periods': '60,180'
               }
         }
 
@@ -665,7 +665,7 @@ class Client(object):
 
         .. code-block:: python
 
-          [ CloseTime, OpenPrice, HighPrice, LowPrice, ClosePrice, Volume ]
+          [ CloseTime, OpenPrice, HighPrice, LowPrice, ClosePrice, Volume, QuoteVolume]
 
         """
 
