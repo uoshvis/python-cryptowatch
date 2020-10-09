@@ -2,7 +2,8 @@
 python-cryptowatch
 ==================
 
-This is an unofficial Python wrapper for the `Cryptowatch public Data API <https://cryptowat.ch/docs/api>`_. Cryptowatch is a cryptocurrency charting and trading platform owned by `Kraken <https://www.kraken.com/>`_.
+This is an unofficial Python wrapper for the `Cryptowatch public Data API <https://cryptowat.ch/docs/api>`_.
+Cryptowatch is a cryptocurrency charting and trading platform owned by `Kraken exchange <https://www.kraken.com/>`_.
 
 
 Source code
@@ -28,7 +29,9 @@ Quick Start
 
     """
     Returns a market's OHLC candlestick data.
-    This represents a 1-hour candle starting at 1594087200 and ending at 1602179348.
+    This represents a 1-hour candle starting at 1594087200 (Tuesday,
+    7 July 2020 02:00:00 GMT) and ending at 1602179348 (Thursday,
+    8 October 2020 17:49:08 GMT).
     """
 
     data = {
