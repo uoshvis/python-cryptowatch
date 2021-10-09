@@ -31,6 +31,8 @@ class Client(object):
     def _encode_params(**kwargs):
         data = kwargs.get('data', None)
         payload = {}
+        if 'apikey' in params:
+            payload['apikey'] = params['apikey']
         if data['route'] == 'trades':
             params = data['params']
             if 'limit' in params:
