@@ -21,9 +21,9 @@ def get_requirements(file):
     requirements = parse_requirements(file, session=False)
     requirements = list(requirements) 
     try:
-        requirements = [str(ir.req) for ir in install_reqs]
+        requirements = [str(ir.req) for ir in requirements]
     except:
-        requirements = [str(ir.requirement) for ir in install_reqs]
+        requirements = [str(ir.requirement) for ir in requirements]
     return requirements
 
 setup(
