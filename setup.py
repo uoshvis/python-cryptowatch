@@ -19,6 +19,10 @@ def get_version():
 def get_requirements(file):
     """Return a list of requirements from a file."""
     requirements = parse_requirements(file, session=False)
+    try:
+        retval = [str(ir._internal.req) for ir in requirements if not None]
+    except AttributeError:
+        retval = [str(ir.req) for ir in requirements if not None]
     return [str(ir.req) for ir in requirements if not None]
 
 
