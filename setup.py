@@ -1,7 +1,11 @@
 """Package setup file."""
 import os
 
-from pip.req import parse_requirements
+try: # for pip >= 10
+    from pip._internal.req import parse_requirements
+except ImportError: # for pip <= 9.0.3
+    from pip.req import parse_requirements
+    
 from setuptools import find_packages, setup
 
 
@@ -15,8 +19,12 @@ def get_version():
 def get_requirements(file):
     """Return a list of requirements from a file."""
     requirements = parse_requirements(file, session=False)
-    return [str(ir.req) for ir in requirements if not None]
-
+    requirements = list(requirements) 
+    try:
+        requirements = [str(ir.req) for ir in requirements]
+    except:
+        requirements = [str(ir.requirement) for ir in requirements]
+    return requirements
 
 setup(
     name='cryptowatch',
